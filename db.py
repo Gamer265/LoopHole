@@ -26,7 +26,7 @@ class DataBase:
             await self.channels.delete_one({"_id": chat_id})
 
     async def get_channels(self):
-        data = await self.channels.find()
+        data = self.channels.find()
         return (await data.to_list(length=None))
 
     async def is_channel_on_list(self, chat_id):
