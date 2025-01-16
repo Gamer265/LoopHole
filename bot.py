@@ -8,6 +8,7 @@ import asyncio, secrets
 user_bot = TelegramClient(StringSession(Var.SESSION_STRING),  2040, "b18441a1ff607e10a989891a5462e627")
 dB = DataBase()
 sch = AsyncIOScheduler(event_loop=user_bot.loop)
+DATA = {}
 
 async def start_bot() -> None:
     await user_bot.start()
@@ -33,7 +34,7 @@ def message_link(self):
 
 @user_bot.on(events.NewMessage(outgoing=True, pattern=".listch"))
 async def ch_list(event):
-    data = dB.get_channels()
+    data = await dB.get_channels()
     txt = ""
     for i in data:
         txt += f"`{i['_id']}` - `{i['surplus_views']}+` - `{i['interval']}min`\n"
@@ -66,6 +67,10 @@ async def aadd(event):
     except:
         return await event.edit("Wrong Input!!")
     await dB.rem_channel(channel_id)
+    pros = DATA.get(channel_id) or []
+    for proc in pros:
+        sch.remove_job(proc)
+    del DATA[channel_id]
     await event.edit(f"`Sucessfully Removed {channel_id} From Watch!`")
 
 @user_bot.on(events.NewMessage())
@@ -81,17 +86,20 @@ async def k(e: Message):
 async def deleter(fwd_msg_id, final_views, chat_id , base_bot_id, time, post_link):
     print("started")
     sch_id = secrets.token_hex(6)
+    DATA[chat_id] = (DATA.get(chat_id) or []).append(sch_id)
     sch.add_job(send_to_bot, "interval", minutes=time, args=(post_link, base_bot_id), id=sch_id)
     try:
         while True:
             msg = await user_bot.get_messages(chat_id, ids=[fwd_msg_id])
             if msg[0].views >= final_views:
                 sch.remove_job(sch_id)
+                DATA[chat_id] = (DATA.get(chat_id) or [sch_id]).remove(sch_id)
                 return await user_bot.delete_messages(chat_id, fwd_msg_id)
             await asyncio.sleep(20)
     except:
         await user_bot.delete_messages(chat_id, fwd_msg_id)
         sch.remove_job(sch_id)
+        DATA[chat_id] = (DATA.get(chat_id) or [sch_id]).remove(sch_id)
 
 sch.start()
 user_bot.loop.run_until_complete(start_bot())
