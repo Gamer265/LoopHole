@@ -7,7 +7,7 @@ import asyncio, secrets
 
 user_bot = TelegramClient(StringSession(Var.SESSION_STRING),  2040, "b18441a1ff607e10a989891a5462e627")
 dB = DataBase()
-sch = AsyncIOScheduler()
+sch = AsyncIOScheduler(event_loop=user_bot.loop)
 
 async def start_bot() -> None:
     await user_bot.start()
