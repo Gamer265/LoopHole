@@ -4,5 +4,4 @@ motor[srv]
 dnspython
 pymongo
 apscheduler
-decouple
 python-decouple
