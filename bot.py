@@ -81,7 +81,10 @@ async def k(e: Message):
         base_bot_id = await dB.get_base_channel()
         current_views = e.views
         final_views = current_views + views
-        await user_bot.send_message(base_bot_id, message_link(e))
+        try:
+            await user_bot.send_message(base_bot_id, message_link(e))
+        except:
+            pass
         asyncio.create_task(deleter(e.id, final_views, e.chat_id ,base_bot_id, interval, message_link(e)))
 
 async def deleter(fwd_msg_id, final_views, chat_id , base_bot_id, time, post_link):
