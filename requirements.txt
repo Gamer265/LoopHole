@@ -1,0 +1,6 @@
+telethon
+asyncio
+motor[srv]
+dnspython
+pymongo
+apscheduler
